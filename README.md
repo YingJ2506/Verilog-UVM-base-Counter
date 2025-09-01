@@ -15,8 +15,9 @@ Verilog project - UVM base Counter
 
 # 驗證環境設計
 本驗證平台由多個模組組成，體現了 UVM 的分層架構：
-- Sequence：負責產生 15 個隨機的 en 和 mode 資料。
-- Driver：將 Sequence 產生的資料數據驅動到 DUT 的輸入埠。
+- transaction：負責產生隨機的 en 和 mode 資料。
+- Sequence：負責控制整個測試流程，並透過握手訊號來協調 Driver 的行為。
+- Driver：將transaction產生的資料數據驅動到 DUT 的輸入埠。
 - Monitor：獨立地觀察 DUT 的輸入與輸出訊號，並將資料傳送給 Scoreboard。
 - Scoreboard：根據 en 和 mode，獨立地預測 DUT 的輸出值，並與 Monitor 傳來的實際值進行比對。
 - Environment：整合所有驗證元件，協調它們的運行時序。
@@ -58,7 +59,9 @@ EPWave 波型圖可視化測試結果（見附圖）
 - 改寫為 Class-based：將所有模組（如 counter_transaction、driver 等）用 SystemVerilog class 實現，以完全符合 UVM 的物件導向設計原則。
 - 導入 TLM：使用 TLM (Transaction Level Modeling) 埠來取代模組埠和全域變數，實現更抽象的元件通訊。
 - 增加測試項目：擴展測試計畫，涵蓋更複雜的情境，例如隨機的 en 脈衝寬度測試、隨機延遲測試等。
-
+- 分離 Sequence 與 Sequencer 職責：將 sequence 和 sequencer 的功能拆分。sequence 專注於產生交易，sequencer 則作為仲裁與傳輸的橋樑，提升專案彈性。
+- 升級為物件導向傳輸：優化 driver 直接從陣列讀取數據的方式。改為讓 sequence 產生交易物件並透過 sequencer 傳輸給 driver，實現更佳的可擴展性。
+- 封裝驗證元件：將 scoreboard 和 transaction pool 封裝進 environment 模組。這能使 environment 成為可獨立重用的單元，提升整個驗證平台的模組化程度。
 
 # 更版紀錄
 1. v1.0---初始版本，完成基本功能驗證
